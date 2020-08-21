@@ -161,11 +161,14 @@ static PyObject* PyImageNet_Classify( PyImageNet_Object* self, PyObject* args, P
 
 	int width = 0;
 	int height = 0;
+	float meanPixelR = 0.0f;
+	float meanPixelG = 0.0f;
+	float meanPixelB = 0.0f;
 
 	const char* format_str = "rgba32f";
-	static char* kwlist[] = {"image", "width", "height", "format", NULL};
+	static char* kwlist[] = {"image", "width", "height", "format", "meanPixelR", "meanPixelG", "meanPixelB", NULL};
 
-	if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iis", kwlist, &capsule, &width, &height, &format_str))
+	if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iisfff", kwlist, &capsule, &width, &height, &format_str, &meanPixelR, &meanPixelG, &meanPixelB))
 	{
 		PyErr_SetString(PyExc_Exception, LOG_PY_INFERENCE "imageNet.Classify() failed to parse args tuple");
 		printf(LOG_PY_INFERENCE "imageNet.Classify() failed to parse args tuple\n");
@@ -184,7 +187,7 @@ static PyObject* PyImageNet_Classify( PyImageNet_Object* self, PyObject* args, P
 	// classify the image
 	float confidence = 0.0f;
 
-	const int img_class = self->net->Classify(ptr, width, height, format, &confidence);
+	const int img_class = self->net->Classify(ptr, width, height, format, &confidence, meanPixelR, meanPixelG, meanPixelB);
 
 	if( img_class < 0 )
 	{

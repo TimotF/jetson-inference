@@ -157,7 +157,7 @@ public:
 	 * @param confidence optional pointer to float filled with confidence value.
 	 * @returns Index of the maximum class, or -1 on error.
 	 */
-	template<typename T> int Classify( T* image, uint32_t width, uint32_t height, float* confidence=NULL )		{ return Classify((void*)image, width, height, imageFormatFromType<T>(), confidence); }
+	template<typename T> int Classify( T* image, uint32_t width, uint32_t height, float* confidence=NULL, float meanPixelR=0.0f, float meanPixelG=0.0f, float meanPixelB=0.0f )		{ return Classify((void*)image, width, height, imageFormatFromType<T>(), confidence, meanPixelR, meanPixelG, meanPixelB); }
 	
 	/**
 	 * Determine the maximum likelihood image class.
@@ -168,7 +168,7 @@ public:
 	 * @param confidence optional pointer to float filled with confidence value.
 	 * @returns Index of the maximum class, or -1 on error.
 	 */
-	int Classify( void* image, uint32_t width, uint32_t height, imageFormat format, float* confidence=NULL );
+	int Classify( void* image, uint32_t width, uint32_t height, imageFormat format, float* confidence=NULL, float meanPixelR=0.0f, float meanPixelG=0.0f, float meanPixelB=0.0f );
 
 	/**
 	 * Determine the maximum likelihood image class.
@@ -180,7 +180,7 @@ public:
 	 * @param confidence optional pointer to float filled with confidence value.
 	 * @returns Index of the maximum class, or -1 on error.
 	 */
-	int Classify( float* rgba, uint32_t width, uint32_t height, float* confidence=NULL, imageFormat format=IMAGE_RGBA32F );
+	int Classify( float* rgba, uint32_t width, uint32_t height, float* confidence=NULL, imageFormat format=IMAGE_RGBA32F, float meanPixelR=0.0f, float meanPixelG=0.0f, float meanPixelB=0.0f );
 
 	/**
 	 * Retrieve the number of image recognition classes (typically 1000)
@@ -226,7 +226,7 @@ protected:
 	imageNet();
 	
 	int  Classify( float* confidence=NULL );
-	bool PreProcess( void* image, uint32_t width, uint32_t height, imageFormat format );
+	bool PreProcess( void* image, uint32_t width, uint32_t height, imageFormat format, float meanPixelR, float meanPixelG, float meanPixelB );
 	bool Process();
 
 	bool init( NetworkType networkType, uint32_t maxBatchSize, precisionType precision, deviceType device, bool allowGPUFallback );

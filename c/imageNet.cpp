@@ -400,7 +400,7 @@ bool imageNet::loadClassInfo( const char* filename, int expectedClasses )
 
 
 // PreProcess
-bool imageNet::PreProcess( void* image, uint32_t width, uint32_t height, imageFormat format )
+bool imageNet::PreProcess( void* image, uint32_t width, uint32_t height, imageFormat format, float meanPixelR, float meanPixelG, float meanPixelB )
 {
 	// verify parameters
 	if( !image || width == 0 || height == 0 )
@@ -451,22 +451,9 @@ bool imageNet::PreProcess( void* image, uint32_t width, uint32_t height, imageFo
 	}
 	else
 	{
-		// downsample, convert to band-sequential BGR, and apply mean pixel subtraction 
-		// if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
-		// 						    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
-		// 						    make_float3(104.0069879317889f, 116.66876761696767f, 122.6789143406786f),
-		// 						    GetStream())) )
-		// if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
-		// 						    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
-		// 						    make_float3(0.0f, 0.0f, 0.0f),
-		// 						    GetStream())) )
-		// if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
-		// 						    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
-		// 						    make_float3(137.65268255739795222325483337044716f, 141.02132493622448805581370834261179f, 138.18528778698978953798359725624323f),
-		// 						    GetStream())) )
 		if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
 								    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
-								    make_float3(138.18528778698978953798359725624323f, 141.02132493622448805581370834261179f,137.65268255739795222325483337044716f ),
+								    make_float3(meanPixelR,meanPixelG,meanPixelB ),
 								    GetStream())) )
 		{
 			LogError(LOG_TRT "imageNet::PreProcess() -- cudaTensorMeanBGR() failed\n");
@@ -493,7 +480,7 @@ bool imageNet::Process()
 
 
 // Classify
-int imageNet::Classify( void* image, uint32_t width, uint32_t height, imageFormat format, float* confidence )
+int imageNet::Classify( void* image, uint32_t width, uint32_t height, imageFormat format, float* confidence, float meanPixelR, float meanPixelG, float meanPixelB )
 {
 	// verify parameters
 	if( !image || width == 0 || height == 0 )
@@ -503,7 +490,7 @@ int imageNet::Classify( void* image, uint32_t width, uint32_t height, imageForma
 	}
 	
 	// downsample and convert to band-sequential BGR
-	if( !PreProcess(image, width, height, format) )
+	if( !PreProcess(image, width, height, format, meanPixelR, meanPixelG, meanPixelB) )
 	{
 		LogError(LOG_TRT "imageNet::Classify() -- tensor pre-processing failed\n");
 		return -1;
@@ -514,9 +501,9 @@ int imageNet::Classify( void* image, uint32_t width, uint32_t height, imageForma
 
 			
 // Classify
-int imageNet::Classify( float* rgba, uint32_t width, uint32_t height, float* confidence, imageFormat format )
+int imageNet::Classify( float* rgba, uint32_t width, uint32_t height, float* confidence, imageFormat format, float meanPixelR, float meanPixelG, float meanPixelB )
 {
-	return Classify(rgba, width, height, format, confidence);
+	return Classify(rgba, width, height, format, confidence, meanPixelR, meanPixelG, meanPixelB);
 }
 
 
