@@ -130,7 +130,9 @@ bool imageNet::init(const char* prototxt_path, const char* model_path, const cha
 	LogInfo("         -- class_labels %s\n", class_path);
 	LogInfo("         -- input_blob   '%s'\n", input);
 	LogInfo("         -- output_blob  '%s'\n", output);
-	LogInfo("         -- batch_size   %u\n\n", maxBatchSize);
+	LogInfo("         -- batch_size   %u\n", maxBatchSize);
+	LogInfo("         -- precision   %u\n", precision);
+	LogInfo("         -- mean   %s\n\n", mean_binary);
 
 	/*
 	 * load and parse googlenet network definition and model file
@@ -243,6 +245,7 @@ imageNet* imageNet::Create( const commandLine& cmdLine )
 		const char* labels   = cmdLine.GetString("labels");
 		const char* input    = cmdLine.GetString("input_blob");
 		const char* output   = cmdLine.GetString("output_blob");
+		const char* mean   = cmdLine.GetString("mean");
 
 		if( !input ) 	input    = IMAGENET_DEFAULT_INPUT;
 		if( !output )  output   = IMAGENET_DEFAULT_OUTPUT;
@@ -252,7 +255,12 @@ imageNet* imageNet::Create( const commandLine& cmdLine )
 		if( maxBatchSize < 1 )
 			maxBatchSize = DEFAULT_MAX_BATCH_SIZE;
 
-		net = imageNet::Create(prototxt, modelName, NULL, labels, input, output, maxBatchSize);
+		precisionType precision = (precisionType)cmdLine.GetInt("precision");
+		
+		if( precision < 1 )
+			precision = TYPE_FASTEST;
+
+		net = imageNet::Create(prototxt, modelName, mean, labels, input, output, maxBatchSize, precision);
 	}
 	else
 	{
@@ -444,9 +452,21 @@ bool imageNet::PreProcess( void* image, uint32_t width, uint32_t height, imageFo
 	else
 	{
 		// downsample, convert to band-sequential BGR, and apply mean pixel subtraction 
+		// if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
+		// 						    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
+		// 						    make_float3(104.0069879317889f, 116.66876761696767f, 122.6789143406786f),
+		// 						    GetStream())) )
+		// if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
+		// 						    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
+		// 						    make_float3(0.0f, 0.0f, 0.0f),
+		// 						    GetStream())) )
+		// if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
+		// 						    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
+		// 						    make_float3(137.65268255739795222325483337044716f, 141.02132493622448805581370834261179f, 138.18528778698978953798359725624323f),
+		// 						    GetStream())) )
 		if( CUDA_FAILED(cudaTensorMeanBGR(image, format, width, height, 
 								    mInputs[0].CUDA, GetInputWidth(), GetInputHeight(),
-								    make_float3(104.0069879317889f, 116.66876761696767f, 122.6789143406786f),
+								    make_float3(138.18528778698978953798359725624323f, 141.02132493622448805581370834261179f,137.65268255739795222325483337044716f ),
 								    GetStream())) )
 		{
 			LogError(LOG_TRT "imageNet::PreProcess() -- cudaTensorMeanBGR() failed\n");

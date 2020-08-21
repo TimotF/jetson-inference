@@ -59,6 +59,7 @@
 		  "  --model=MODEL        path to custom model to load (caffemodel, uff, or onnx)\n" 			\
 		  "  --prototxt=PROTOTXT  path to custom prototxt to load (for .caffemodel only)\n" 				\
 		  "  --labels=LABELS      path to text file containing the labels for each class\n" 				\
+		  "  --mean=MEAN          path to bin file mean.binaryproto\n" 				\
 		  "  --input-blob=INPUT   name of the input layer (default is '" IMAGENET_DEFAULT_INPUT "')\n" 	\
 		  "  --output-blob=OUTPUT name of the output layer (default is '" IMAGENET_DEFAULT_OUTPUT "')\n" 	\
 		  "  --batch-size=BATCH   maximum batch size (default is 1)\n"								\
